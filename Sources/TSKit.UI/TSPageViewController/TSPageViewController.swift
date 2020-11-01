@@ -88,6 +88,14 @@ open class TSPageViewController: UIViewController, TSPageControlDelegate {
         }
     }
     
+    public var cachePages: Bool = true {
+        didSet {
+            if !cachePages {
+                invalidateCache()
+            }
+        }
+    }
+    
     /// Delegate which will be notified about all `TSPageViewController`'s events.
     public weak var pageDelegate: TSPageViewControllerDelegate?
     
@@ -166,6 +174,10 @@ open class TSPageViewController: UIViewController, TSPageControlDelegate {
     
     fileprivate var pagesCount: Int {
         return pageDataSource?.numberOfPages(in: self) ?? 0
+    }
+    
+    public func invalidateCache() {
+        currentPages.removeAll()
     }
     
     open override func viewDidLoad() {
@@ -300,7 +312,9 @@ open class TSPageViewController: UIViewController, TSPageControlDelegate {
             // log.debug("Found")
             // log.debug("Adding new controller to active pages at index \(index) with identifier '\(identifier)'.")
             reusablePageViewControllers[identifier]?.removeFirst()
-            currentPages.append(DequeuedPage(index: index, Page(identifier: identifier, controller: viewController)))
+            if cachePages {
+                currentPages.append(DequeuedPage(index: index, Page(identifier: identifier, controller: viewController)))
+            }
             return viewController
         } else {
             // log.debug("Requesting new controller for identifier '\(identifier)'.")
@@ -310,7 +324,9 @@ open class TSPageViewController: UIViewController, TSPageControlDelegate {
             }
             
             // log.debug("Adding new controller to active pages at index \(index) with identifier '\(identifier)'.")
-            currentPages.append(DequeuedPage(index: index, Page(identifier: identifier, controller: viewController)))
+            if cachePages {
+                currentPages.append(DequeuedPage(index: index, Page(identifier: identifier, controller: viewController)))
+            }
             return viewController
         }
     }
