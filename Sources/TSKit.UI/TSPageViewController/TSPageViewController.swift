@@ -205,10 +205,11 @@ open class TSPageViewController: UIViewController, TSPageControlDelegate {
             return
         }
         
-        self.pageViewController?.setViewControllers([controller], direction: (self.currentPage < index ? .forward : .reverse), animated: animated, completion: nil)
+        self.pageViewController?.setViewControllers([controller], direction: (self.currentPage < index ? .forward : .reverse), animated: animated, completion: { _ in
+            self.pageDelegate?.pageController(self, didShow: controller, forPageAt: index)
+        })
         self.currentPage = index
         self.pageDataSource?.pageController(self, prepareViewController: controller, at: index)
-        self.pageDelegate?.pageController(self, didShow: controller, forPageAt: index)
     }
     
     /// Convenient method to show next page.
