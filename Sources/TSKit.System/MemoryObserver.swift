@@ -71,12 +71,16 @@ public extension MemoryObserver {
 
     enum ObservationInterval {
 
+        /// Refresh memory info almost in real-time every 100 ms.
         case live
 
+        /// Refresh memory info every half of a second.
         case frequent
 
+        /// Refresh memory info every second.
         case `default`
 
+        /// Refresh memory info every 5 seconds.
         case deferred
 
         fileprivate var timeInterval: TimeInterval {
@@ -148,9 +152,11 @@ public extension MemoryObserver {
     }
 
     fileprivate func notify(_ memoryInfo: MemoryInfo) {
-        NotificationCenter.default.post(name: Notification.didUpdate.name,
-                                        object: self,
-                                        userInfo: [Notification.UserInfoKey.memoryInfoKey : memoryInfo])
+        DispatchQueue.global().async {
+            NotificationCenter.default.post(name: Notification.didUpdate.name,
+                                            object: self,
+                                            userInfo: [Notification.UserInfoKey.memoryInfoKey: memoryInfo])
+        }
     }
 }
 
