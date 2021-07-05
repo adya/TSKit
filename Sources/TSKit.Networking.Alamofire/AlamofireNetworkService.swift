@@ -1,18 +1,15 @@
 // - Since: 01/20/2018
 // - Author: Arkadii Hlushchevskyi
-// - Copyright: © 2020. Arkadii Hlushchevskyi.
+// - Copyright: © 2021. Arkadii Hlushchevskyi.
 // - Seealso: https://github.com/adya/TSKit.Networking.Alamofire/blob/master/LICENSE.md
 
 import Foundation
 import Alamofire
 import TSKit_Networking
-import TSKit_Injection
 import TSKit_Core
 import TSKit_Log
 
-public class AlamofireNetworkService: AnyNetworkService, RequestAdapter {
-
-    private let log = try? Injector.inject(AnyLogger.self, for: AnyNetworkService.self)
+public class AlamofireNetworkService: AnyNetworkService {
 
     public var backgroundSessionCompletionHandler: (() -> Void)? {
         get {
@@ -23,12 +20,16 @@ public class AlamofireNetworkService: AnyNetworkService, RequestAdapter {
         }
     }
     
-    public var interceptors: [AnyNetworkServiceInterceptor]?
+    public var interceptors: [AnyNetworkServiceInterceptor]
+    
+    public var recoverers: [AnyNetworkServiceRecoverer]
 
     private let manager: Alamofire.SessionManager
 
     private let configuration: AnyNetworkServiceConfiguration
 
+    private var log: AnyLogger?
+    
     /// Flag determining what type of session tasks should be used.
     /// When working in background all requests are handled by `URLSessionDownloadTask`s,
     /// otherwise `URLSessionDataTask` will be used.
@@ -40,13 +41,20 @@ public class AlamofireNetworkService: AnyNetworkService, RequestAdapter {
         return configuration.headers
     }
 
-    public required init(configuration: AnyNetworkServiceConfiguration) {
+    public required init(configuration: AnyNetworkServiceConfiguration,
+                         recoverers: [AnyNetworkServiceRecoverer] = [],
+                         interceptors: [AnyNetworkServiceInterceptor] = [],
+                         log: AnyLogger?) {
         manager = Alamofire.SessionManager(configuration: configuration.sessionConfiguration)
         manager.startRequestsImmediately = false
         self.configuration = configuration
+        self.recoverers = recoverers
+        self.interceptors = interceptors
+        self.log = log
         manager.adapter = self
+        manager.retrier = self
     }
-
+    
     public func builder(for request: AnyRequestable) -> AnyRequestCallBuilder {
         return AlamofireRequestCallBuilder(request: request)
     }
@@ -56,12 +64,13 @@ public class AlamofireNetworkService: AnyNetworkService, RequestAdapter {
                         queue: DispatchQueue = .global(),
                         completion: RequestCompletion? = nil) {
         let calls = requestCalls.map(supportedCall).filter { call in
-            let isAllowed = self.interceptors?.allSatisfy { $0.intercept(call: call) } ?? true
+            let isAllowed = self.interceptors.allSatisfy { $0.intercept(call: call) }
             
             if !isAllowed { log?.warning("At least one interceptor has denied \(call.request)") }
             
             return isAllowed
         }
+        addActiveCalls(calls)
         var capturedResult: EmptyResponse = .success(())
         guard !calls.isEmpty else {
             completion?(capturedResult)
@@ -144,10 +153,49 @@ public class AlamofireNetworkService: AnyNetworkService, RequestAdapter {
         return supportedCall
     }
     
-    public func adapt(_ urlRequest: URLRequest) throws -> URLRequest {
-        transform(urlRequest) {
-            $0.timeoutInterval = configuration.timeoutInterval ?? configuration.sessionConfiguration.timeoutIntervalForRequest
+    /// Calls that are being processed currently.
+    private var activeCalls: [AlamofireRequestCall] = []
+    
+    /// Calls that are pending recovery.
+    private var recoveringCalls: [AlamofireRequestCall] = []
+    
+    private let syncQueue = DispatchQueue(label: "ActiveCallsSynchronizedQueue", attributes: .concurrent)
+    
+    /// Finds an active `AlamofireRequestCall` that corresponds to given `request`.
+    private func activeCall(for request: Alamofire.Request) -> AlamofireRequestCall? {
+        syncQueue.sync { activeCalls.first(where: { $0.originalRequest == request.task?.originalRequest }) }
+    }
+    
+    private func addActiveCalls(_ calls: [AlamofireRequestCall]) {
+        syncQueue.async(flags: .barrier) {
+            self.activeCalls += calls
         }
+    }
+    
+    private func removeActiveCall(_ call: AlamofireRequestCall) {
+        syncQueue.async(flags: .barrier) {
+            self.activeCalls.removeFirst(where: { $0.originalRequest == call.originalRequest })
+        }
+    }
+    
+    private func addRecoveringCall(_ call: AlamofireRequestCall) {
+        syncQueue.async(flags: .barrier) {
+            self.recoveringCalls.append(call)
+        }
+    }
+    
+    private func removeRecoveringCall(_ call: AlamofireRequestCall) {
+        syncQueue.async(flags: .barrier) {
+            self.recoveringCalls.removeFirst(where: { $0.originalRequest == call.originalRequest })
+        }
+    }
+    
+    /// Finds and removes an `AlamofireRequestCall` that is pending recovery that corresponds to given `request`.
+    private func popRecoveringCall(for request: URLRequest) -> AlamofireRequestCall? {
+        syncQueue.sync(flags: .barrier) { recoveringCalls.removeFirst(where: {
+            $0.originalRequest?.url == request.url &&
+            $0.originalRequest?.httpMethod == request.httpMethod
+        }) }
     }
 }
 
@@ -210,11 +258,18 @@ private extension AlamofireNetworkService {
                                     call.token = request
                                     
                                 case .failure(let error):
-                                wrapper.error = .init(request: request,
-                                                      response: nil,
-                                                      error: error,
-                                                      reason: .encodingFailure,
-                                                      body: nil)
+                                    call.errorHandler?.handle(request: call.request,
+                                                              response: nil,
+                                                              error: error,
+                                                              sessionError: error.asAFError?.underlyingError,
+                                                              reason: .encodingFailure,
+                                                              body: nil)
+                                    wrapper.error = .init(request: request,
+                                                          response: nil,
+                                                          error: error,
+                                                          sessionError: error.asAFError?.underlyingError,
+                                                          reason: .encodingFailure,
+                                                          body: nil)
                                }
                            })
             return wrapper
@@ -564,6 +619,7 @@ private extension AlamofireNetworkService {
                                 rawData: Data?,
                                 kind: ResponseKind,
                                 call: AlamofireRequestCall) -> EmptyResponse {
+        defer { removeActiveCall(call) }
         guard call.token != nil else {
             log?.verbose(tag: self)("Request has been cancelled and will be ignored")
             return .success(())
@@ -574,12 +630,14 @@ private extension AlamofireNetworkService {
             call.errorHandler?.handle(request: call.request,
                                       response: nil,
                                       error: error,
+                                      sessionError: error?.asAFError?.underlyingError,
                                       reason: .unreachable,
                                       body: nil)
         
             return .failure(.init(request: call.request,
                                   response: nil,
                                   error: error,
+                                  sessionError: error?.asAFError?.underlyingError,
                                   reason: .unreachable,
                                   body: nil))
         }
@@ -595,7 +653,7 @@ private extension AlamofireNetworkService {
             }
         }()
         
-        let shouldProcess = self.interceptors?.allSatisfy { $0.intercept(call: call, response: httpResponse, body: value) } ?? true
+        let shouldProcess = self.interceptors.allSatisfy { $0.intercept(call: call, response: httpResponse, body: value) }
         
         // If any interceptor blocked response processing then exit.
         guard shouldProcess else {
@@ -604,12 +662,14 @@ private extension AlamofireNetworkService {
             call.errorHandler?.handle(request: call.request,
                                       response: httpResponse,
                                       error: error,
+                                      sessionError: error?.asAFError?.underlyingError,
                                       reason: .skipped,
                                       body: value)
             
             return .failure(.init(request: call.request,
                                   response: httpResponse,
                                   error: error,
+                                  sessionError: error?.asAFError?.underlyingError,
                                   reason: .skipped,
                                   body: value))
         }
@@ -643,11 +703,13 @@ private extension AlamofireNetworkService {
             call.errorHandler?.handle(request: call.request,
                                       response: httpResponse,
                                       error: error,
+                                      sessionError: error.asAFError?.underlyingError,
                                       reason: .httpError,
                                       body: value)
             return .failure(.init(request: call.request,
                                   response: httpResponse,
                                   error: error,
+                                  sessionError: error.asAFError?.underlyingError,
                                   reason: .httpError,
                                   body: value))
         }
@@ -665,11 +727,13 @@ private extension AlamofireNetworkService {
                     call.errorHandler?.handle(request: call.request,
                                               response: httpResponse,
                                               error: constructionError,
+                                              sessionError: nil,
                                               reason: .deserializationFailure,
                                               body: value)
                     return .failure(.init(request: call.request,
                                           response: httpResponse,
                                           error: constructionError,
+                                          sessionError: nil,
                                           reason: .deserializationFailure,
                                           body: value))
                 }
@@ -690,11 +754,13 @@ private extension AlamofireNetworkService {
                     call.errorHandler?.handle(request: call.request,
                                               response: httpResponse,
                                               error: constructionError,
+                                              sessionError: nil,
                                               reason: .deserializationFailure,
                                               body: value)
                     return .failure(.init(request: call.request,
                                           response: httpResponse,
-                                          error: error,
+                                          error: constructionError,
+                                          sessionError: nil,
                                           reason: .deserializationFailure,
                                           body: value))
                 }
@@ -703,11 +769,13 @@ private extension AlamofireNetworkService {
                 call.errorHandler?.handle(request: call.request,
                                           response: httpResponse,
                                           error: error,
+                                          sessionError: error.asAFError?.underlyingError,
                                           reason: .httpError,
                                           body: value)
                 return .failure(.init(request: call.request,
                                       response: httpResponse,
                                       error: error,
+                                      sessionError: error.asAFError?.underlyingError,
                                       reason: .httpError,
                                       body: value))
             }
@@ -715,6 +783,59 @@ private extension AlamofireNetworkService {
         
         // By the end of the loop report successful handling.
         return .success(())
+    }
+}
+
+// MARK: - RequestRetrier
+extension AlamofireNetworkService: RequestRetrier {
+    
+    public func should(_ manager: SessionManager,
+                       retry request: Request,
+                       with error: Error,
+                       completion: @escaping RequestRetryCompletion) {
+        guard let requestCall = activeCall(for: request) else {
+            return completion(false, 0)
+        }
+        
+        guard let recoverer = recoverers.first(where: { $0.canRecover(call: requestCall, response: request.response, error: error as? URLError, in: self) }) else {
+            return completion(false, 0)
+        }
+        
+        addRecoveringCall(requestCall)
+        
+        log?.verbose(tag: self)("Recovering request \(requestCall.request)")
+        recoverer.recover(call: requestCall, response: request.response, error: error as? URLError, in: self) { [weak self] isRecovered in
+            if isRecovered {
+                requestCall.recoveryAttempts += 1
+                self?.log?.verbose(tag: self)("Retrying request \(requestCall.request). Attempt #\(requestCall.recoveryAttempts). Retrying after response: \(String(describing: request.response)); error: \(error)")
+            } else {
+                self?.log?.verbose(tag: self)("No more retries for request \(requestCall.request). Failing with response: \(String(describing: request.response)); error: \(error)")
+                self?.removeRecoveringCall(requestCall)
+            }
+            completion(isRecovered, isRecovered ? 1 : 0)
+        }
+    }
+}
+
+// MARK: - RequestAdapter
+extension AlamofireNetworkService: RequestAdapter {
+    
+    public func adapt(_ urlRequest: URLRequest) throws -> URLRequest {
+        transform(urlRequest) {
+            $0.timeoutInterval = configuration.timeoutInterval ?? configuration.sessionConfiguration.timeoutIntervalForRequest
+            
+            // Re-apply headers in case those changed after recovery.
+            // Only do so if the call is recovering, otherwise request has been already configured.
+            if let call = popRecoveringCall(for: $0) {
+                log?.verbose(tag: self)("Updating headers for recovered request \(call.request)")
+                let headers = constructHeaders(withRequest: call.request)
+                for (headerField, headerValue) in headers {
+                    $0.setValue(headerValue, forHTTPHeaderField: headerField)
+                }
+               
+                // TODO: Add parameters invalidation as well, perhaps?
+            }
+        }
     }
 }
 
@@ -729,7 +850,16 @@ private extension Alamofire.HTTPMethod {
         case .delete: self = .delete
         case .put: self = .put
         case .head: self = .head
+        case .trace: self = .trace
+        case .options: self = .options
         }
+    }
+}
+
+private extension Error {
+    
+    var asAFError: AFError? {
+        self as? AFError
     }
 }
 
