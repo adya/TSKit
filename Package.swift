@@ -28,7 +28,7 @@ let package = Package(
         .target(name: "TSKit.Log", dependencies: ["TSKit.Core"]),
         .target(name: "TSKit.Storage", dependencies: ["TSKit.Core"]),
        
-        .target(name: "TSKit.UI", dependencies: ["TSKit.Core"], exclude: ["TSKit.UI/WIP"]),
+        .target(name: "TSKit.UI", dependencies: ["TSKit.Core"], exclude: ["WIP"]),
        
         .target(name: "TSKit.System", dependencies: ["TSKit.Core"]),
         .target(name: "TSKit.Injection", dependencies: ["TSKit.Core", "TSKit.Log"]),
