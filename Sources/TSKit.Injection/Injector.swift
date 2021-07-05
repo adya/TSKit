@@ -3,7 +3,7 @@
 // - Copyright: © 2020. Arkadii Hlushchevskyi.
 // - Seealso: https://github.com/adya/TSKit.Injection/blob/master/LICENSE.md
 
-import Dispatch
+import Foundation
 import TSKit_Log
 
 /**
@@ -71,7 +71,7 @@ public class Injector {
 
     /// Replaces existing `InjectionRule`s with specified in the preset.
     /// - Parameter preset: An array of rules to be set.
-    public static func configure(with preset: InjectionPreset) {
+    public static func configure(with preset: InjectionRulesPreset) {
         self.configure(with: preset.rules)
     }
 
