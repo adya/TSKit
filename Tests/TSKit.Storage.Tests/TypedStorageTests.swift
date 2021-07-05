@@ -1,4 +1,3 @@
-import Foundation
 import XCTest
 import TSKit_Core
 @testable import TSKit_Storage
@@ -23,37 +22,37 @@ class TypedStorageTests: XCTestCase {
 extension TypedStorageTests {
     
     func testBoolIntegrity() {
-        XCTAssertIntegrity(with: true)
-        XCTAssertIntegrity(with: false)
+        assertIntegrity(with: true)
+        assertIntegrity(with: false)
     }
     
     func testIntIntegrity() {
-        XCTAssertIntegrity(with: 5)
-        XCTAssertIntegrity(with: Int.min)
-        XCTAssertIntegrity(with: Int.max)
+        assertIntegrity(with: 5)
+        assertIntegrity(with: Int.min)
+        assertIntegrity(with: Int.max)
     }
     
     func testDecimalIntegrity() {
-        XCTAssertIntegrity(with: 5 as Decimal)
-        XCTAssertIntegrity(with: 5.55 as Decimal)
+        assertIntegrity(with: 5 as Decimal)
+        assertIntegrity(with: 5.55 as Decimal)
     }
     
     func testDoubleIntegrity() {
-        XCTAssertIntegrity(with: 5.55 as Double)
+        assertIntegrity(with: 5.55 as Double)
     }
     
     func testFloatIntegrity() {
-        XCTAssertIntegrity(with: 5.55 as Float)
+        assertIntegrity(with: 5.55 as Float)
     }
     
     func testDataIntegrity() {
-        XCTAssertIntegrity(with: Data([0x11, 0x22, 0x33, 0x44]))
+        assertIntegrity(with: Data(bytes: [0x11, 0x22, 0x33, 0x44]))
     }
     
     func testStringIntegrity() {
-        XCTAssertIntegrity(with: "My text", key: "shortText")
-        XCTAssertIntegrity(with: String.random(count: 100), key: "longText")
-        XCTAssertIntegrity(with: "", key: "emptyText")
+        assertIntegrity(with: "My text", key: "shortText")
+        assertIntegrity(with: String(repeating: "a", count: 1000), key: "longText")
+        assertIntegrity(with: "", key: "emptyText")
     }
 }
 
@@ -64,7 +63,7 @@ extension TypedStorageTests {
         let key = "Value"
         guaranteedSet(true, forKey: key)
         
-        XCTAssertIntegrity(with: false, key: key)
+        assertIntegrity(with: false, key: key)
     }
 }
 
@@ -74,15 +73,15 @@ extension TypedStorageTests {
     func testHasValue() {
         let key = "Value"
         
-        XCTAssert(!storage.hasValue(forKey: key), "Storage must not contain value for key '\(key)' prior to it being set")
+        XCTAssertFalse(storage.hasValue(forKey: key), "Storage must not contain value for key '\(key)' prior to it being set")
         
         guaranteedSet(true, forKey: key)
         
-        XCTAssert(storage.hasValue(forKey: key), "Storage should contain value for key '\(key)' after it was set")
-        XCTAssert(!storage.hasValue(forKey: "UnrelatedValue"), "Storage must not contain unrelated values that was not stored in it")
+        XCTAssertTrue(storage.hasValue(forKey: key), "Storage should contain value for key '\(key)' after it was set")
+        XCTAssertFalse(storage.hasValue(forKey: "UnrelatedValue"), "Storage must not contain unrelated values that was not stored in it")
         
         guaranteedRemove(forKey: key)
-        XCTAssert(!storage.hasValue(forKey: key), "Storage must not contain value for key '\(key)' after it was removed")
+        XCTAssertFalse(storage.hasValue(forKey: key), "Storage must not contain value for key '\(key)' after it was removed")
         
     }
     
@@ -92,19 +91,19 @@ extension TypedStorageTests {
         
         guaranteedPopulateValues(forKeys: keys)
         
-        XCTAssert(storage.count == keys.count, "Count doesn't match number of added items")
+        XCTAssertEqual(storage.count, keys.count, "Count doesn't match number of added items")
         
         guaranteedSet(true, forKey: modifiedKey)
         
-        XCTAssert(storage.count == keys.count, "Count must remain the same after updating existing value")
+        XCTAssertEqual(storage.count, keys.count, "Count must remain the same after updating existing value")
         
         guaranteedRemove(forKey: modifiedKey)
         
-        XCTAssert(storage.count == keys.count - 1, "Count must be decremented after removing a single value")
+        XCTAssertEqual(storage.count, keys.count - 1, "Count must be decremented after removing a single value")
         
         guaranteedRemoveAll()
         
-        XCTAssert(storage.count == 0, "storage.count must be `0` after removing all values")
+        XCTAssertEqual(storage.count, 0, "storage.count must be `0` after removing all values")
     }
 }
 
@@ -118,8 +117,8 @@ extension TypedStorageTests {
         let allRemoved = storage.removeAll()
         let isEmpty = keys.allSatisfy { !storage.hasValue(forKey: $0) }
         
-        XCTAssert(allRemoved, "Failed to remove all values")
-        XCTAssert(isEmpty, "Storage is not empty after removing all values")
+        XCTAssertTrue(allRemoved, "Failed to remove all values")
+        XCTAssertTrue(isEmpty, "Storage is not empty after removing all values")
     }
     
     func testRemove() {
@@ -131,19 +130,19 @@ extension TypedStorageTests {
         
         let wasRemoved = storage.removeValue(forKey: toBeRemovedKey)
         
-        XCTAssert(wasRemoved, "Failed to remove value for '\(toBeRemovedKey)' key")
-        XCTAssert(!storage.hasValue(forKey: toBeRemovedKey), "Value is still present in the storage")
-        XCTAssert(storage.intValue(forKey: toBeRetainedKey) == retainedValue, "Removal has affected unrelated value")
+        XCTAssertTrue(wasRemoved, "Failed to remove value for '\(toBeRemovedKey)' key")
+        XCTAssertFalse(storage.hasValue(forKey: toBeRemovedKey), "Value is still present in the storage")
+        XCTAssertEqual(storage.intValue(forKey: toBeRetainedKey), retainedValue, "Removal has affected unrelated value")
     }
 }
 
 private extension TypedStorageTests {
     
-    /// XCTAsserts that specifief `value` won't be modified when being stored and read afterwards.
-    func XCTAssertIntegrity<T>(with value: T, key: String? = nil) {
+    /// Asserts that specifief `value` won't be modified when being stored and read afterwards.
+    func assertIntegrity<T>(with value: T, key: String? = nil) {
         let key = key ?? "\(T.self)"
-        XCTAssert(set(value, forKey: key), "Failed to set \(key) value")
-        XCTAssert(match(value, forKey: key), "\(key) integrity not preserved")
+        XCTAssertTrue(set(value, forKey: key), "Failed to set \(key) value")
+        XCTAssertTrue(match(value, forKey: key), "\(key) integrity not preserved")
     }
     
     func set<T>(_ value: T, forKey key: String) -> Bool {
@@ -180,7 +179,7 @@ private extension TypedStorageTests {
     
     /// Populates storage with `true` values for specified keys.
     func guaranteedPopulateValues(forKeys keys: [String]) {
-        XCTAssert(keys.allSatisfy { set(true, forKey: $0) }, "`storage.set(_:,forKey:)` is malfunctioning")
+        XCTAssertTrue(keys.allSatisfy { set(true, forKey: $0) }, "`storage.set(_:,forKey:)` is malfunctioning")
     }
     
     func guaranteedRemove(forKey key: String) {
@@ -188,10 +187,10 @@ private extension TypedStorageTests {
     }
     
     func guaranteedRemoveAll() {
-        XCTAssert(storage.removeAll(), "`storage.removeAll()` is malfunctioning")
+        XCTAssertTrue(storage.removeAll(), "`storage.removeAll()` is malfunctioning")
     }
     
     func guaranteedSet<T>(_ value: T, forKey key: String) {
-        XCTAssert(set(value, forKey: key), "`storage.set(_:,forKey:)` is malfunctioning")
+        XCTAssertTrue(set(value, forKey: key), "`storage.set(_:,forKey:)` is malfunctioning")
     }
 }
