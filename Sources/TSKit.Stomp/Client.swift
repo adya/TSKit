@@ -1,7 +1,7 @@
 import Foundation
 import Starscream
 
-public protocol AnyStompServiceDelegate: class {
+public protocol AnyStompServiceDelegate: AnyObject {
     
     func serviceDidConnect(_ service: StompService)
     

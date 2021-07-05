@@ -3,7 +3,7 @@
 // - Copyright: © 2020. Arkadii Hlushchevskyi.
 // - Seealso: https://github.com/adya/TSKit.Log/blob/master/LICENSE.md
 
-public protocol AnyLogInterceptor: class {
+public protocol AnyLogInterceptor: AnyObject {
 
     func shouldLog(_ entry: LogEntry) -> Bool
 }

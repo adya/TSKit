@@ -67,12 +67,12 @@ public func < (lhs: Time, rhs: Time) -> Bool {
 public extension Time {
 
     /// Total number of seconds in this time interval.
-    public var totalSeconds : Int64 {
+    var totalSeconds : Int64 {
         return minutes * 60 + seconds
     }
 
     /// Total number of milliseconds in this time interval.
-    public var totalMillis : Int64 {
+    var totalMillis : Int64 {
         return totalSeconds * 1000 + millis
     }
 }

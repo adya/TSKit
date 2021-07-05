@@ -46,7 +46,7 @@ extension TypedStorageTests {
     }
     
     func testDataIntegrity() {
-        assertIntegrity(with: Data(bytes: [0x11, 0x22, 0x33, 0x44]))
+        assertIntegrity(with: Data([0x11, 0x22, 0x33, 0x44]))
     }
     
     func testStringIntegrity() {
