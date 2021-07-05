@@ -6,7 +6,7 @@
 import Foundation
 import TSKit_Core
 
-public class LogEntryDecorator: AnyLogEntryDecorator {
+open class LogEntryDecorator: AnyLogEntryDecorator {
     
     /// Representation style of a log level in decorated message.
     public var style: LogLevelStyle
@@ -31,7 +31,7 @@ public class LogEntryDecorator: AnyLogEntryDecorator {
         self.tags = tags
     }
 
-    public func decorate(_ entry: LogEntry) -> String {
+    open func decorate(_ entry: LogEntry) -> String {
         let date = dateFormatter.string(from: entry.timestamp)
         let customTags = entry.tags.map { "\($0)" }
         

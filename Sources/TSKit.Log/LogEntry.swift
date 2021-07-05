@@ -2,21 +2,38 @@
 // - Author: Arkadii Hlushchevskyi
 // - Copyright: © 2020. Arkadii Hlushchevskyi.
 // - Seealso: https://github.com/adya/TSKit.Log/blob/master/LICENSE.md
+
 import Foundation
 
 public struct LogEntry {
+    
+    public var message: String
 
-    public let message: String
+    public var timestamp: Date
 
-    public let timestamp: Date
+    public var tags: [String]
 
-    public let tags: [String]
+    public var level: LogLevel
 
-    public let level: LogLevel
+    public var functionName: String
 
-    public let functionName: String
+    public var fileName: String
 
-    public let fileName: String
-
-    public let lineNumber: Int
+    public var lineNumber: Int
+    
+    public init(message: String,
+                timestamp: Date,
+                tags: [String],
+                level: LogLevel,
+                functionName: String = #function,
+                fileName: String = #file,
+                lineNumber: Int = #line) {
+        self.message = message
+        self.timestamp = timestamp
+        self.tags = tags
+        self.level = level
+        self.functionName = functionName
+        self.fileName = fileName
+        self.lineNumber = lineNumber
+    }
 }

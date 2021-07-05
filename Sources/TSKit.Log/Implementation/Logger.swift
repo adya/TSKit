@@ -46,7 +46,7 @@ public class Logger: AnyLogger {
                .forEach { $0.write(entry) }
     }
 
-    public init() {}
+    public init(interceptors: [AnyLogInterceptor] = []) {}
 
     public func debug(_ message: String?,
                       tag: [Any?],
@@ -104,8 +104,6 @@ func objectTag(_ tag: Any?) -> String? {
         return tag
     } else if let typeTag = tag as? Any.Type {
         return String(describing: typeTag)
-    } else if let custom = tag as? CustomStringConvertible {
-        return custom.description
     } else {
         return String(describing: type(of: tag))
     }
