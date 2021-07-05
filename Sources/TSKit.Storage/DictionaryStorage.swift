@@ -3,9 +3,13 @@
 // - Copyright: © 2020. Arkadii Hlushchevskyi.
 // - Seealso: https://github.com/adya/TSKit.Storage/blob/master/LICENSE.md
 
+import Foundation
+
 public class DictionaryStorage : AnyDynamicStorage, AnyTypedStorage {
     
     private var storage = [String : Any]()
+    
+    public init() {}
     
     public func value(forKey key: String) -> Any? {
         storage[key]

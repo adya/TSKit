@@ -6,7 +6,7 @@
 import Foundation
 
 /// Represents a common way to read values in storages of any kind.
-public protocol AnyReadableDynamicStorage: AnyReadableTypedStorage {
+public protocol AnyReadableDynamicStorage : AnyReadableTypedStorage {
     
     /// Convenient way to access stored values.
     /// - Parameter key: Key associated with stored value.

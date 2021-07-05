@@ -4,7 +4,7 @@
 // - Seealso: https://github.com/adya/TSKit.Storage/blob/master/LICENSE.md
 
 /// Represents a common way to read values in storages of any kind.
-public protocol AnyReadableStorage : class {
+public protocol AnyReadableStorage : AnyObject {
     
     /// Total number of stored entries.
     var count: Int { get }

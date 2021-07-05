@@ -54,7 +54,6 @@ public extension AnyDynamicStorage {
     }
 }
 
-
 // MARK: - Typed support for dynamic storages
 public extension AnyDynamicStorage {
     

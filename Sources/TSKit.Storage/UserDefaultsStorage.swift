@@ -9,10 +9,18 @@ import Foundation
 @available(iOS 8, *)
 public class UserDefaultsStorage : AnyDynamicStorage {
     
-    private var storage = UserDefaults.standard
+    private let storage: UserDefaults
+    
+    /// Initializes storage with provided `userDefaults` instance.
+    ///
+    /// - Parameter userDefaults: UserDefaults instance to be used as a baking storage.
+    ///                           Defaults to `UserDefaults.standard`.
+    public init(userDefaults: UserDefaults = .standard) {
+        self.storage = userDefaults
+    }
     
     public func value(forKey key: String) -> Any? {
-        return storage.value(forKey: key)
+        storage.value(forKey: key)
     }
     
     public func set(_ value: Any, forKey key: String) -> Bool {
@@ -39,11 +47,11 @@ public class UserDefaultsStorage : AnyDynamicStorage {
     }
     
     public var count: Int {
-        return dictionary.count
+        dictionary.count
     }
     
     public var dictionary: [String : Any] {
-        return storage.dictionaryRepresentation()
+        storage.dictionaryRepresentation()
     }
     
     deinit {
