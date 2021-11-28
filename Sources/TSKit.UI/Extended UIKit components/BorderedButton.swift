@@ -1,12 +1,13 @@
 // - Since: 01/20/2018
 // - Author: Arkadii Hlushchevskyi
-// - Copyright: © 2020. Arkadii Hlushchevskyi.
+// - Copyright: © 2021. Arkadii Hlushchevskyi.
 // - Seealso: https://github.com/adya/TSKit.UI/blob/master/LICENSE.md
+#if os(iOS)
 import UIKit
 
 /// A `UIButton` subclass that highlights border.
 @IBDesignable
-public class BorderedButton: UIButton {
+open class BorderedButton: UIButton {
     
     private var originalBorderColor: UIColor? {
         didSet {
@@ -24,7 +25,7 @@ public class BorderedButton: UIButton {
         
     }
     
-    override public var isEnabled: Bool {
+    override open var isEnabled: Bool {
         didSet {
             if isEnabled != oldValue {
                 setBorder(faded: !isEnabled, animated: true)
@@ -32,7 +33,7 @@ public class BorderedButton: UIButton {
         }
     }
     
-    override public var isHighlighted: Bool {
+    override open var isHighlighted: Bool {
         didSet {
             if isHighlighted != oldValue {
                 setBorder(faded: !isEnabled || isHighlighted, animated: true)
@@ -59,3 +60,4 @@ public class BorderedButton: UIButton {
         }
     }
 }
+#endif

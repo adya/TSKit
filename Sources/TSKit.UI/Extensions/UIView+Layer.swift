@@ -1,18 +1,10 @@
 // - Since: 01/20/2018
 // - Author: Arkadii Hlushchevskyi
-// - Copyright: © 2020. Arkadii Hlushchevskyi.
+// - Copyright: © 2021. Arkadii Hlushchevskyi.
 // - Seealso: https://github.com/adya/TSKit.UI/blob/master/LICENSE.md
-
+#if os(iOS)
 import UIKit
 
-/**
-  A handy `UIView` extension providing access to underlying `layer`'s  common properties.
-
-  - Version:    1.2
-  - Date:       11/08/2017
-  - Since:      09/23/2016
-  - Author:     AdYa
-*/
 @IBDesignable
 public extension UIView {
     
@@ -21,7 +13,7 @@ public extension UIView {
     @IBInspectable
     var borderWidth: CGFloat {
         get {
-            return layer.borderWidth
+            layer.borderWidth
         }
         set {
             layer.borderWidth = newValue
@@ -33,14 +25,8 @@ public extension UIView {
     @IBInspectable
     var borderColor: UIColor? {
         get {
-            if let color = layer.borderColor {
-                return UIColor(cgColor: color)
-            }
-            else {
-                return nil
-            }
+            layer.borderColor.flatMap(UIColor.init(cgColor:))
         }
-        
         set {
             layer.borderColor = newValue?.cgColor
         }
@@ -65,7 +51,7 @@ public extension UIView {
     @IBInspectable
     var cornerRadius: CGFloat {
         get {
-            return layer.cornerRadius
+            layer.cornerRadius
         }
         set {
             layer.masksToBounds = newValue > 0
@@ -78,7 +64,7 @@ public extension UIView {
     @IBInspectable
     var shadowOffset: CGSize {
         get {
-            return layer.shadowOffset
+            layer.shadowOffset
         }
         set {
             layer.shadowOffset = newValue
@@ -90,7 +76,7 @@ public extension UIView {
     @IBInspectable
     var shadowOpacity: Float {
         get {
-            return layer.shadowOpacity
+            layer.shadowOpacity
         }
         set {
             layer.shadowOpacity = newValue
@@ -102,7 +88,7 @@ public extension UIView {
     @IBInspectable
     var shadowRadius: CGFloat {
         get {
-            return layer.shadowRadius
+            layer.shadowRadius
         }
         set {
             layer.shadowRadius = newValue
@@ -114,14 +100,11 @@ public extension UIView {
     @IBInspectable
     var shadowColor: UIColor? {
         get {
-            if let color = layer.shadowColor {
-                return UIColor(cgColor: color)
-            } else {
-                return nil
-            }
+            layer.shadowColor.flatMap(UIColor.init(cgColor:))
         }
         set {
             layer.shadowColor = newValue?.cgColor
         }
     }
 }
+#endif
