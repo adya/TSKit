@@ -23,7 +23,8 @@ let package = Package(
         .package(url: "https://github.com/daltoniam/Starscream.git", .upToNextMajor(from: "4.0.0")),
     ],
     targets: [
-        .target(name: "TSKit.Core", dependencies: []),
+        .target(name: "TSKit.Core", dependencies: ["TSKit.Core.ObjC"]),
+        .target(name: "TSKit.Core.ObjC", dependencies: []),
        
         .target(name: "TSKit.Log", dependencies: ["TSKit.Core"]),
         .target(name: "TSKit.Storage", dependencies: ["TSKit.Core"]),

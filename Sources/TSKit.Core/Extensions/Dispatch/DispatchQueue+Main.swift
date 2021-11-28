@@ -3,11 +3,15 @@
 // - Copyright: © 2020. Arkadii Hlushchevskyi.
 // - Seealso: https://github.com/adya/TSKit.Core/blob/master/LICENSE.md
 
-import Dispatch
 import Foundation
 
 public extension DispatchQueue {
     
+    /// Performs provided `execute` closure on the `main` queue synchronuosly.
+    ///
+    /// When called from any background `DispatchQueue` this method will dispatch
+    /// given `execute` closure synchrounously to `DisaptchQueue.main`,
+    /// otherwise `execute` closure will be immediately called on the `main` thread.
     func syncIfNeeded<Result>(_ execute: () -> Result) -> Result {
         if self == DispatchQueue.main && Thread.isMainThread {
             return execute()
