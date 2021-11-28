@@ -23,6 +23,8 @@ public extension Sequence where Iterator.Element: Equatable {
     /// When duplicates are found the first occurrence is considered to be unique and will be included in the result,
     /// all subsequent duplicates will be ignored.
     /// - Returns: An array containing only distinct elements of the `Sequence`.
+    /// - Seealso: `distinctLast`
+    /// - Complexity: `O(n*m)`, where `n` is the length of the sequence and `m` is number of unique elements in the sequence.
     @available(*, renamed: "distinctFirst", message: "Property has been renamed as part of extended API for filtering distinct elements")
     var distinct: [Iterator.Element] {
         distinctFirst
@@ -53,11 +55,7 @@ public extension Sequence where Iterator.Element: Equatable {
     /// - Seealso: `distinctFirst`
     /// - Complexity: `O(n*m)`, where `n` is the length of the sequence and `m` is number of unique elements in the sequence.
     var distinctLast: [Iterator.Element] {
-        reversed().reduce([]) { uniqueElements, element in
-            uniqueElements.contains(element)
-                ? uniqueElements
-                : uniqueElements + [element]
-        }.reversed()
+        reversed().distinctFirst.reversed()
     }
 }
 
@@ -104,16 +102,9 @@ public extension Sequence {
     /// all previous duplicates will be ignored.
     /// - Parameter key: A closure providing an `Equatable` value used as a key to compare elements.
     /// - Returns: An array containing only distinct elements of the `Sequence`.
-    /// - Seealso: `distinctLast`
+    /// - Seealso: `distinctFirst`
     /// - Complexity: `O(n*m)`, where `n` is the length of the sequence and `m` is number of unique elements in the sequence.
     func distinctLast<T>(by key: (Self.Iterator.Element) -> T?) -> [Iterator.Element] where T : Equatable {
-        reversed().reduce(([], [])) { (unique: ([T], [Iterator.Element]), element: Iterator.Element) in
-            guard let key = key(element) else {
-                return unique
-            }
-            return unique.0.contains(key)
-                ? unique
-                : (unique.0 + [key], unique.1 + [element])
-        }.1.reversed()
+        reversed().distinctFirst(by: key).reversed()
     }
 }

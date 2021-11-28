@@ -3,47 +3,6 @@
 // - Copyright: © 2020. Arkadii Hlushchevskyi.
 // - Seealso: https://github.com/adya/TSKit.Core/blob/master/LICENSE.md
 
-public extension Sequence {
-    
-    /// Maps `Sequence` to a `Dictionary` using `key` and `value` closures to build resulting `dictionary`.
-    /// - Parameter key: A closure that provides a property of `Sequence`'s element to be used as a dictioanry key.
-    /// - Parameter value: A closure that provides a property of `Sequence`'s element to be used as a dictioanry value.
-    /// - Note: `key` must be unique in order to avoid collisions.
-    /// - Returns: `Dictionary` containing key-value pairs.
-    func map<KeyType, ValueType>(key: (Iterator.Element) throws -> KeyType,
-                                        value: (Iterator.Element) throws -> ValueType) -> [KeyType : ValueType] where KeyType : Hashable {
-        let results: [KeyType : ValueType] = self.reduce([:]) {
-            guard let key = try? key($1),
-                let value = try? value($1) else {
-                    return $0
-            }
-            var dic = $0
-            dic[key] = value
-            return dic
-        }
-        return results
-    }
-    
-    /// Maps `Sequence` to a `Dictionary` using `key` and `value` closures to build resulting `dictionary`.
-    /// - Parameter key: A closure that provides a property of `Sequence`'s element to be used as a dictionary key.
-    /// - Parameter value: A closure that provides a property of `Sequence`'s element to be used as a dictionary value.
-    /// - Note: `key` must be unique in order to avoid collisions.
-    /// - Returns: `Dictionary` containing key-value pairs.
-    func compactMap<KeyType, ValueType>(key: (Iterator.Element) throws -> KeyType?,
-                                     value: (Iterator.Element) throws -> ValueType?) -> [KeyType: ValueType] where KeyType : Hashable {
-        let results: [KeyType: ValueType] = self.reduce([:]) {
-            guard let key = try? key($1),
-                let value = try? value($1) else {
-                return $0
-            }
-            var dic = $0
-            dic[key] = value
-            return dic
-        }
-        return results
-    }
-}
-
 public extension Dictionary {
     
     /// Creates a new `Dictionary` by transforming each existing key-value pair using `transform` closure.
@@ -65,19 +24,3 @@ public extension Dictionary {
         return dict
     }
 }
-
-
-/// Appends all keys and values from `right` dictionary to `left`.
-public func += <K, V>(left: inout [K: V], right: [K: V]) {
-    right.forEach { (k, v) in
-        left[k] = v
-    }
-}
-
-/// Creates a new dictionary containing all keys and values from both `left` and `right` dictionaries.
-public func + <K, V>(left: [K: V], right: [K: V]) -> [K: V] {
-    var dic = left
-    dic += right
-    return dic
-}
-
