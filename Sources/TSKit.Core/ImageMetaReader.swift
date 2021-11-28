@@ -9,7 +9,6 @@ import CoreImage
 /// An object that provides metadata of the image file.
 public class ImageMetaReader {
 
-    
     public init() {}
     
     /// Gets dimensions of the image at specified `url`.
