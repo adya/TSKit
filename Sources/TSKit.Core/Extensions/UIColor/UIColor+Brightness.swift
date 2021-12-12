@@ -2,18 +2,18 @@
 // - Author: Arkadii Hlushchevskyi
 // - Copyright: © 2020. Arkadii Hlushchevskyi.
 // - Seealso: https://github.com/adya/TSKit.Core/blob/master/LICENSE.md
-#if os(iOS)
-import UIKit
 
-// MARK: - UIColor brightness adjustments
-public extension UIColor {
+import CoreGraphics
+
+// MARK: - Color brightness adjustments
+public extension Color {
     
     /// Creates `UIColor` by brightening existing one.
     /// - Parameter correctionFactor: Brightning factor defining how much each color component should be brightened.
     ///                               Should be in `(0...1)` range.
     /// - Parameter preserveAlpha: Flag indicating whether or not created `UIColor` should inherit alpha component.
     /// - Returns: Brighten `UIColor` or `nil` if `correctionFactor` was invalid.
-    func brighten(by correctionFactor : Float, preserveAlpha : Bool = true) -> UIColor? {
+    func brighten(by correctionFactor : Float, preserveAlpha : Bool = true) -> Color? {
         guard (0.0...1.0).contains(correctionFactor) else {
             print("Color '\(self)' can be lightened only with values in range (0; 1]")
             return nil
@@ -26,13 +26,17 @@ public extension UIColor {
     ///                               Should be in `(0...1)` range.
     /// - Parameter preserveAlpha: Flag indicating whether or not created `UIColor` should inherit alpha component.
     /// - Returns: Darken `UIColor` or `nil` if `correctionFactor` was invalid.
-    func darken(by correctionFactor : Float, preserveAlpha : Bool = true) -> UIColor? {
+    func darken(by correctionFactor : Float, preserveAlpha : Bool = true) -> Color? {
+        guard (0.0...1.0).contains(correctionFactor) else {
+            print("Color '\(self)' can be darkened only with values in range (0; 1]")
+            return nil
+        }
         return changeBrightness(by: -correctionFactor, preserveAlpha: preserveAlpha)
     }
     
     
     /// Creates new `UIColor` by multiplying each color component by specified `correctionFactor`.
-    private func changeBrightness(by correctionFactor : Float, preserveAlpha : Bool = true) -> UIColor? {
+    private func changeBrightness(by correctionFactor : Float, preserveAlpha : Bool = true) -> Color? {
         guard let argb = self.getARGB() else {
             return nil
         }
@@ -50,10 +54,10 @@ public extension UIColor {
             return UInt8(0 > value ? 0 : (value > 255 ? 255 : value))
         }
         
-        return UIColor(alpha: (preserveAlpha ? UInt8(alpha) : 255),
-                       red: clamp(red),
-                       green: clamp(green),
-                       blue: clamp(blue))
+        return Color(alpha: (preserveAlpha ? UInt8(alpha) : 255),
+                     red: clamp(red),
+                     green: clamp(green),
+                     blue: clamp(blue))
     }
     
     /// Extracts color components from `UIColor`.
@@ -64,20 +68,24 @@ public extension UIColor {
         var fGreen : CGFloat = 0
         var fBlue : CGFloat = 0
         var fAlpha: CGFloat = 0
-        if self.getRed(&fRed, green: &fGreen, blue: &fBlue, alpha: &fAlpha) {
-            let iRed = UInt8(fRed * 255.0)
-            let iGreen = UInt8(fGreen * 255.0)
-            let iBlue = UInt8(fBlue * 255.0)
-            let iAlpha = UInt8(fAlpha * 255.0)
-            return (red:iRed, green:iGreen, blue:iBlue, alpha:iAlpha)
-        } else {
+        
+        #if os(iOS)
+        guard getRed(&fRed, green: &fGreen, blue: &fBlue, alpha: &fAlpha) else {
             print("Could not extract ARGB components from color '\(self)'")
             return nil
         }
+        #elseif os(macOS)
+        getRed(&fRed, green: &fGreen, blue: &fBlue, alpha: &fAlpha)
+        #endif
+       
+        return (red: UInt8(fRed * 255.0),
+                green: UInt8(fGreen * 255.0),
+                blue: UInt8(fBlue * 255.0),
+                alpha: UInt8(fAlpha * 255.0))
     }
 }
 
-public extension UIColor {
+public extension Color {
     
     /// A value between `0.0` and `1.0` representing luminosity of the color.
     var luminosity: CGFloat {
@@ -91,8 +99,6 @@ public extension UIColor {
     /// - Parameter threshold: A maximum value of luminosity when color is determined as dark.
     /// - Note: This method evaluates `luminosity` of the color and compares it to a certain threshold.
     func isDark(threshold: CGFloat = 0.82) -> Bool {
-        return luminosity < threshold
+        luminosity < threshold
     }
-    
 }
-#endif

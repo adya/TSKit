@@ -10,7 +10,7 @@ public extension Collection {
     /// starting with index N.
     /// Behavior is undefined if there is no such N.
     func orderedIndex(where predicate: (Iterator.Element) -> Bool) -> Index {
-        return orderedIndex(where: predicate, in: startIndex..<endIndex)
+        orderedIndex(where: predicate, in: startIndex..<endIndex)
     }
     
     func orderedIndex(where predicate: (Iterator.Element) -> Bool, in range: Range<Index>) -> Index {

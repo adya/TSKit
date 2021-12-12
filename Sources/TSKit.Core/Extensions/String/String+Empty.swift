@@ -7,6 +7,6 @@ public extension String {
 
     /// - Returns: self if it is not empty, otherwise `nil`.
     var nonEmpty: String? {
-        return self.isEmpty ? nil : self
+        isEmpty ? nil : self
     }
 }

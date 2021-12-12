@@ -7,6 +7,6 @@ public extension Numeric {
 
     /// - Returns: self if it does not equal zero, otherwise `nil`.
     var nonZero: Self? {
-        return self == 0 ? nil : self
+        self == 0 ? nil : self
     }
 }

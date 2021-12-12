@@ -9,12 +9,12 @@ public extension Date {
 
     /// - Returns: The very first moment of the day represented by the receiver.
     func startOfDay(in calendar: Calendar = .current) -> Date {
-        return calendar.startOfDay(for: self)
+        calendar.startOfDay(for: self)
     }
 
     /// - Returns: The very last moment of the day represented by the receiver.
     func endOfDay(in calendar: Calendar = .current) -> Date {
-        return calendar.date(byAdding: .init(day: 1, second: -1), to: startOfDay(in: calendar))!
+        calendar.date(byAdding: .init(day: 1, second: -1), to: startOfDay(in: calendar))!
     }
 }
 
@@ -22,7 +22,7 @@ public extension Date {
 
     /// - Returns: Date for tomorrow at the exact same time.
     func tomorrow(in calendar: Calendar = .current) -> Date {
-        return calendar.date(byAdding: .day, value: 1, to: self)!
+        calendar.date(byAdding: .day, value: 1, to: self)!
     }
 
     func week(_ offset: Int = 0, in calendar: Calendar = .current) -> DateInterval {

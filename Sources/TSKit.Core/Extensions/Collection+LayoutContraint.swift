@@ -4,6 +4,9 @@
 // - Seealso: https://github.com/adya/TSKit.Networking.Alamofire/blob/master/LICENSE.md
 #if os(iOS)
 import UIKit
+#elseif os(macOS)
+import AppKit
+#endif
 
 public extension Collection where Element == NSLayoutConstraint {
     
@@ -27,4 +30,3 @@ public extension Collection where Element == NSLayoutConstraint {
         NSLayoutConstraint.deactivate(Array(self))
     }
 }
-#endif

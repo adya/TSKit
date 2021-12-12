@@ -7,6 +7,6 @@ public extension Collection {
 
     /// - Returns: self if it is not empty, otherwise `nil`.
     var nonEmpty: Self? {
-        return self.isEmpty ? nil : self
+        isEmpty ? nil : self
     }
 }

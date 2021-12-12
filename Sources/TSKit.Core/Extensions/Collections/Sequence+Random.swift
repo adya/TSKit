@@ -47,7 +47,7 @@ public extension Array {
     /// - Parameter count: Number of elements to be returned.
     /// - Returns: An array containing `n` elements from current one.
     func random(_ count: Int) -> Array {
-        return Array(shuffled.prefix(count))
+        Array(shuffled.prefix(count))
     }
 }
 

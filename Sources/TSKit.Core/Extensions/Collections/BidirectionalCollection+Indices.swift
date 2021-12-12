@@ -12,6 +12,6 @@ public extension BidirectionalCollection {
     ///                        should be included in the result.
     /// - Returns: An array of indices of eligible elements.
     func allIndices(where predicate: (Iterator.Element) -> Bool) -> [Self.Index] {
-        return indices.filter { predicate(self[$0]) }
+        indices.filter { predicate(self[$0]) }
     }
 }

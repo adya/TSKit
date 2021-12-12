@@ -48,5 +48,5 @@ infix operator =~
  - Returns: Bool value indicating whether input matches the pattern.
  */
 public func =~ (input: String, pattern: String) -> Bool {
-    return input.range(of: pattern, options: .regularExpression) == input.startIndex..<input.endIndex
+    input.range(of: pattern, options: .regularExpression) == input.startIndex..<input.endIndex
 }

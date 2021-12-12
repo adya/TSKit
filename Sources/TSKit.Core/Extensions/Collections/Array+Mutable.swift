@@ -11,21 +11,21 @@ public extension Array {
     /// - Parameter newIndex: An index of the position in the array where element should be placed.
     /// - Returns: An array with the element moved to new position.
     func moving(from index: Index, to newIndex: Index) -> Array {
-        return TSKit_Core.transform(self) { $0.move(from: index, to: newIndex) }
+        TSKit_Core.transform(self) { $0.move(from: index, to: newIndex) }
     }
     
     /// Creates new array with an element appended.
     /// - Parameter index: An element to be appended.
     /// - Returns: An array with appended element.
     func appending(_ element: Element) -> [Element] {
-        return TSKit_Core.transform(self) { $0.append(element) }
+        TSKit_Core.transform(self) { $0.append(element) }
     }
     
     /// Creates new array with an element at given `index` removed.
     /// - Parameter index: An index of the element to be removed.
     /// - Returns: An array with removed element.
     func removing(at index: Index) -> [Element] {
-        return TSKit_Core.transform(self) { $0.remove(at: index) }
+        TSKit_Core.transform(self) { $0.remove(at: index) }
     }
 }
 
@@ -36,7 +36,7 @@ public extension Array where Element: Equatable {
     /// - Parameter element: An element to be removed.
     /// - Returns: An array with removed element.
     func removing(_ element: Element) -> [Element] {
-        return TSKit_Core.transform(self) { $0.removeFirst(element) }
+        TSKit_Core.transform(self) { $0.removeFirst(element) }
     }
     
 }

@@ -23,19 +23,19 @@ public extension Date {
     /// Returns date with date components only.
     @available(iOS 8.0, *)
     var onlyDate: Date {
-        return self.date(with: [.year, .month, .day])
+        self.date(with: [.year, .month, .day])
     }
     
     /// Returns date with time components only.
     @available(iOS 8.0, *)
     var onlyTime: Date {
-        return self.date(with: [.hour, .minute, .second])
+        self.date(with: [.hour, .minute, .second])
     }
     
     /// Returns date with time components only including nanoseconds.
     @available(iOS 8.0, *)
     var preciseTime: Date {
-        return self.date(with: [.hour, .minute, .second, .nanosecond])
+        self.date(with: [.hour, .minute, .second, .nanosecond])
     }
 }
 
@@ -92,11 +92,11 @@ public func +(date : Date, dateComponents: [DateComponents]) -> Date? {
 /// Subtracts given component from the date and returns resulting date.
 @available(iOS 8.0, *)
 public func -(date : Date, dateComponent: DateComponents) -> Date? {
-    return date - [dateComponent]
+    date - [dateComponent]
 }
 
 /// Adds given component to the date and returns resulting date.
 @available(iOS 8.0, *)
 public func +(date : Date, dateComponent: DateComponents) -> Date? {
-    return date + [dateComponent]
+    date + [dateComponent]
 }

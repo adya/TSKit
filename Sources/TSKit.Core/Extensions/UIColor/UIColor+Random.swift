@@ -3,16 +3,15 @@
 // - Copyright: © 2020. Arkadii Hlushchevskyi.
 // - Seealso: https://github.com/adya/TSKit.Core/blob/master/LICENSE.md
 
-#if os(iOS)
-import UIKit
+import CoreGraphics
 
-public extension UIColor {
+public extension Color {
 
     /// Generates random color from pastel pallete and mixes it with given `color` if provided.
     /// Mixing another color adjusts available color range.
     /// - Parameter mixColor: A color to be mixed with generated pastel color.
     /// - Returns: Created color.
-    static func randomPastel(mixedWith mixColor: UIColor? = nil) -> UIColor {
+    static func randomPastel(mixedWith mixColor: Color? = nil) -> Color {
 
         let randomColorGenerator = { () -> CGFloat in
             CGFloat(arc4random() % 256) / 256
@@ -32,7 +31,6 @@ public extension UIColor {
             blue = (blue + mixBlue) / 2
         }
 
-        return UIColor(red: red, green: green, blue: blue, alpha: 1)
+        return .init(red: red, green: green, blue: blue, alpha: 1)
     }
 }
-#endif

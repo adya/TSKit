@@ -3,7 +3,6 @@
 // - Copyright: © 2020. Arkadii Hlushchevskyi.
 // - Seealso: https://github.com/adya/TSKit.Core/blob/master/LICENSE.md
 
-/// A collection extension that adds `move` method.
 public extension Array {
     
     /// Moves element at given `index` to new position at `newIndex`.

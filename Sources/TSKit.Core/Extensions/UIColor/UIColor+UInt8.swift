@@ -2,11 +2,11 @@
 // - Author: Arkadii Hlushchevskyi
 // - Copyright: © 2020. Arkadii Hlushchevskyi.
 // - Seealso: https://github.com/adya/TSKit.Core/blob/master/LICENSE.md
-#if os(iOS)
-import UIKit
 
-// MARK: - UIColor Convenience initializers
-public extension UIColor {
+import CoreGraphics
+
+// MARK: - Color Convenience initializers
+public extension Color {
     
     convenience init(alpha a: UInt8, red r: UInt8, green g: UInt8, blue b: UInt8) {
         self.init(red: CGFloat(r)/255.0,
@@ -54,4 +54,3 @@ public extension UIColor {
         }
     }
 }
-#endif

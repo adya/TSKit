@@ -59,5 +59,4 @@ public extension Sequence {
             $0[key] = value
         }
     }
-    
 }
