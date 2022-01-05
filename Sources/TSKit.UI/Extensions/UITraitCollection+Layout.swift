@@ -1,6 +1,6 @@
 // - Since: 05/18/2021
 // - Author: Arkadii Hlushchevskyi
-// - Copyright: © 2021. Arkadii Hlushchevskyi.
+// - Copyright: © 2022. Arkadii Hlushchevskyi.
 // - Seealso: https://github.com/adya/TSKit.UI/blob/master/LICENSE.md
 #if os(iOS)
 import UIKit

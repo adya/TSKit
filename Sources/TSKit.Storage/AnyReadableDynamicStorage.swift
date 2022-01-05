@@ -1,6 +1,6 @@
 // - Since: 04/07/2017
 // - Author: Arkadii Hlushchevskyi
-// - Copyright: © 2020. Arkadii Hlushchevskyi.
+// - Copyright: © 2022. Arkadii Hlushchevskyi.
 // - Seealso: https://github.com/adya/TSKit.Storage/blob/master/LICENSE.md
 
 import Foundation
