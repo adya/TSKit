@@ -5,7 +5,7 @@
 
 import Dispatch
 
-/// **Not** reentrant synchronizer that is based on a concurrent `DispatchQueue`.
+/// **Not** reentrant synchronizer that is based on a `DispatchSemaphore`.
 public final class SemaphoreSynchronizer: AnySynchronizer {
 
     private let semaphore: DispatchSemaphore
