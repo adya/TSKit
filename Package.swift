@@ -5,7 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "TSKit",
-    platforms: [.iOS(.v10)],
+    platforms: [.iOS(.v9)],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(name: "TSKit.Core", targets: ["TSKit.Core"]),
