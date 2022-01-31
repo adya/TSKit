@@ -21,7 +21,10 @@ public class UrlValidator : PatternValidator {
     /// Passing `true` will make  url valid even without scheme, passing `false` will require url to have scheme.
     public init(allowSkippingScheme: Bool = false) {
         let schemePart = "(?:(http|https)://)\(allowSkippingScheme ? "?" : "")"
-        super.init(pattern: "\(schemePart)([a-zA-Z0-9_\\-])+(?:[\\.|/]([a-zA-Z0-9_\\-])+)+",
+        let hostPart = "([a-zA-Z0-9_\\-])+"
+        let pathPart = "(?:[\\.|/]([a-zA-Z0-9_\\-])+)+"
+        let portPart = "(?::([0-9]+))?"
+        super.init(pattern: "\(schemePart)\(hostPart)\(pathPart)\(portPart)",
                    error: ValidationError.mismatchUrl)
     }
 }
