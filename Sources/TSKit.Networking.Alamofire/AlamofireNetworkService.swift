@@ -254,7 +254,7 @@ private extension AlamofireNetworkService {
                 let directory = self?.configuration.sessionTemporaryFilesDirectory
                     ?? FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
                     ?? {
-                        if #available(iOS 10.0, *) {
+                        if #available(iOS 10.0, macOS 10.12, *) {
                             return FileManager.default.temporaryDirectory
                         } else {
                             return URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
