@@ -13,7 +13,7 @@ public class AlamofireNetworkService: AnyNetworkService {
 
     public var backgroundSessionCompletionHandler: (() -> Void)? {
         get {
-            return manager.backgroundCompletionHandler
+            manager.backgroundCompletionHandler
         }
         set {
             manager.backgroundCompletionHandler = newValue
@@ -34,11 +34,11 @@ public class AlamofireNetworkService: AnyNetworkService {
     /// When working in background all requests are handled by `URLSessionDownloadTask`s,
     /// otherwise `URLSessionDataTask` will be used.
     private var isBackground: Bool {
-        return manager.session.configuration.networkServiceType == .background
+        manager.session.configuration.networkServiceType == .background
     }
 
     private var defaultHeaders: [String : String]? {
-        return configuration.headers
+        configuration.headers
     }
 
     public required init(configuration: AnyNetworkServiceConfiguration,
@@ -56,7 +56,7 @@ public class AlamofireNetworkService: AnyNetworkService {
     }
     
     public func builder(for request: AnyRequestable) -> AnyRequestCallBuilder {
-        return AlamofireRequestCallBuilder(request: request)
+        AlamofireRequestCallBuilder(request: request)
     }
 
     public func request(_ requestCalls: [AnyRequestCall],
@@ -159,7 +159,7 @@ public class AlamofireNetworkService: AnyNetworkService {
     
     /// Calls that are pending recovery.
     @AsyncSynchronized(synchronizer: ConcurrentQueueSynchronizer())
-    private var pendingRecoveries: [URLRequest: RecoveryItem] = [:]
+    private var pendingRecoveries = RecoveryItemDictionary()
     
     /// Finds an active `AlamofireRequestCall` that corresponds to given `request`.
     private func activeCall(for request: Alamofire.Request) -> AlamofireRequestCall? {
@@ -895,6 +895,39 @@ private struct PathEncoding: Alamofire.ParameterEncoding {
     }
 }
 
+/// A custom struct that mimics Dictionary semantics for `[URLRequest: RecoveryItem]`.
+///
+/// It is used to implement custom equality logic for `URLRequest`s to only rely on `url` and `httpMethod`.
+private struct RecoveryItemDictionary {
+    
+    private var items: [RecoveryItem] = []
+    
+    subscript (_ key: URLRequest) -> RecoveryItem? {
+        get {
+            items.first(where: curry(requestEquals)(key))
+        }
+        set {
+            if let newValue = newValue {
+                items.updateFirst(where: curry(requestEquals)(key), with: newValue)
+            } else {
+                _ = removeValue(forKey: key)
+            }
+        }
+    }
+    
+    mutating func removeValue(forKey key: URLRequest) -> RecoveryItem? {
+        items.removeFirst(where: curry(requestEquals)(key))
+    }
+    
+    private func requestEquals(_ lhs: URLRequest, _ rhs: RecoveryItem) -> Bool {
+        requestEquals(lhs, rhs.call.originalRequest)
+    }
+    
+    private func requestEquals(_ lhs: URLRequest?, _ rhs: URLRequest?) -> Bool {
+        lhs?.url == rhs?.url && lhs?.httpMethod == rhs?.httpMethod
+    }
+}
+    
 private struct RecoveryItem {
     
     let recoverer: AnyNetworkServiceRecoverer
